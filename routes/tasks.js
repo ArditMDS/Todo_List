@@ -113,9 +113,7 @@ router.post('/', (req, res) => {
 router.patch('/:id', function (req, res) {
     const id = parseInt(req.params.id);
     const userId = decodeTokenAndGetUserId(req);
-    console.log(userId)
     const updatedTask = req.body;
-    console.log(updatedTask)
     const updateFields = Object.keys(updatedTask).map(key => `${key} = '${updatedTask[key]}'`);
     const sql = `UPDATE todo SET ${updateFields.join(', ')} WHERE id = ${id}`;
     sqlQuery(`SELECT * FROM todo WHERE id = ${id}`, (data) => {
@@ -136,11 +134,18 @@ router.patch('/:id', function (req, res) {
 //Supprimer une tache
 router.delete('/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    sqlQuery(`DELETE FROM todo WHERE id = ${id}`, (result) => {
-        if (result.affectedRows === 1) {
-            res.json({ message: 'La tâche à été supprimé' });
+    const userId = decodeTokenAndGetUserId(req);
+    sqlQuery(`SELECT * FROM todo WHERE id = ${id}`, (data) => {
+        if(parseInt(data[0].user_id) === parseInt(userId)) {
+            sqlQuery(`DELETE FROM todo WHERE id = ${id}`, (result) => {
+                if (result.affectedRows === 1) {
+                    res.json({message: 'La tâche à été supprimé'});
+                } else {
+                    res.status(500).json({message: 'Erreur lors de la suppression de la tâche'});
+                }
+            });
         } else {
-            res.status(500).json({ message: 'Erreur lors de la suppression de la tâche' });
+            res.send("Vous n'avez pas les droits pour faire ça")
         }
     });
 });

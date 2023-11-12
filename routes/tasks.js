@@ -112,15 +112,25 @@ router.post('/', (req, res) => {
 //Update une tache
 router.patch('/:id', function (req, res) {
     const id = parseInt(req.params.id);
+    const userId = decodeTokenAndGetUserId(req);
+    console.log(userId)
     const updatedTask = req.body;
+    console.log(updatedTask)
     const updateFields = Object.keys(updatedTask).map(key => `${key} = '${updatedTask[key]}'`);
     const sql = `UPDATE todo SET ${updateFields.join(', ')} WHERE id = ${id}`;
-    sqlQuery(sql, (result) => {
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Tâche non trouvée' });
+    sqlQuery(`SELECT * FROM todo WHERE id = ${id}`, (data) => {
+        if(parseInt(data[0].user_id) === parseInt(userId)) {
+            sqlQuery(sql, (result) => {
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ message: 'Tâche non trouvée' });
+                }
+                res.json(updatedTask);
+            });
+        } else {
+            res.send("Vous n'avez pas accés à cette tâche")
         }
-        res.json(updatedTask);
-    });
+    })
+
 });
 
 //Supprimer une tache

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('./database');
+const sequelizeInstance = require('./database');
 
-const Tasks = sequelize.define('Task', {
+const Task = sequelizeInstance.define('Task', {
     title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -14,13 +14,10 @@ const Tasks = sequelize.define('Task', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
     },
-    user: {
-        type: DataTypes.STRING(25),
-    },
     description: {
         type: DataTypes.TEXT,
     },
 }, {});
 
-module.exports = Tasks ;
+module.exports = Task ;
 
